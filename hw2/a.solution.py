@@ -23,9 +23,6 @@ plt.scatter(x,y)
 x=torch.tensor(x,requires_grad=False)
 y=torch.tensor(y,requires_grad=False)
 
-# define some function using pytorch operations (note torch. instead of np.) 
-# this function is f(w)=||w-minimum||^2, and so has minimum at minimum_w, i.e. at vector [1.0,3.0]
-# it is a convex function so has one minimum, no other local minima
 def f(w):
     pred = sum([torch.mul(torch.pow(x, i), w[i]) for i in range(len(w))])
     return sum(torch.pow(pred - y,2)) / len(y)
