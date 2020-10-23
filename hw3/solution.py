@@ -44,9 +44,16 @@ b = tf.Variable(initialB,name="b")
 x = tf.placeholder(dtype=tf.float32,name='x')
 y = tf.placeholder(dtype=tf.float32,name='y')
 
-predictions=tf.matmul(x,w)+b
-loss=tf.math.log(1+tf.math.exp(tf.multiply(-y,predictions)))
-risk=tf.reduce_mean(loss);
+# 
+# Parameters
+# 
+L = 1
+C = 10
+
+predictions = tf.matmul(x,w)+b
+loss = tf.math.log(1+tf.math.exp(tf.multiply(-y,predictions)))
+l1_penalty = (1/C) * tf.reduce_sum(tf.abs(w))
+risk = tf.reduce_mean(loss) + l1_penalty
 
 optimizer = tf.train.GradientDescentOptimizer(1e-6)
 train = optimizer.minimize(risk)
@@ -78,7 +85,8 @@ for i in range(0,n_epochs):
     y_pred,curr_w,curr_b=sess.run([predictions,w,b],feed_dict={x: x_test, y: y_test})
     MAE=np.mean(np.abs(np.sign(y_pred) - y_test))
     test_errors.append(MAE)
+    print("Error count:",np.sum(np.abs(np.sign(y_pred) - y_test)))
 
-plt.plot(train_errors)
-plt.plot(test_errors)
-plt.show()
+# plt.plot(train_errors)
+# plt.plot(test_errors)
+# plt.show()
