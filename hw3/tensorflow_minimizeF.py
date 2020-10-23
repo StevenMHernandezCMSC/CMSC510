@@ -7,7 +7,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
-import tensorflow as tf;
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 
 minimum=[-.25,2]
@@ -56,5 +57,6 @@ with sess:
 
 #sess.close()
 
-print("True minimum: "+str(np.maximum(minimum,0)));
+print("True minimum (>=0): "+str(np.maximum(minimum,0)));
+print("True minimum: "+str(minimum));
 print("Found minimum:"+str(new_w_value));
