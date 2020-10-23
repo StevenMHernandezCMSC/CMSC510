@@ -17,15 +17,26 @@ for i, L in enumerate(L_s):
         if len(val):
             grid[i,j] = val
 
-fig, ax = plt.subplots()
-ax.imshow(grid)
+# fig, ax = plt.subplots()
+# ax.imshow(grid)
 
+# for i, L in enumerate(L_s):
+#     for j, C in enumerate(C_s):
+#         text = ax.text(j, i, grid[i, j], ha="center", va="center", color="w")
+
+# plt.xticks(range(len(C_s)), C_s)
+# plt.xlabel("C")
+# plt.yticks(range(len(L_s)), L_s)
+# plt.ylabel("L")
+# plt.show()
+
+
+
+legends = []
 for i, L in enumerate(L_s):
     for j, C in enumerate(C_s):
-        text = ax.text(j, i, grid[i, j], ha="center", va="center", color="w")
-
-plt.xticks(range(len(C_s)), C_s)
-plt.xlabel("C")
-plt.yticks(range(len(L_s)), L_s)
-plt.ylabel("L")
+        val = df[df.C == C][df.L == L].training_error
+        plt.plot(list(val)[0])
+        legends.append(f"C={C}, L={L}")
+plt.legend(legends)
 plt.show()
