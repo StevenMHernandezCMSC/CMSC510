@@ -36,7 +36,7 @@ y_train = y_train.reshape((y_train.shape[0], 1))
 x_test = x_test.reshape((x_test.shape[0], 28*28))
 y_test = y_test.reshape((y_test.shape[0], 1))
 
-def run(n_epochs, L, C, lr, batch_size):
+def run(n_epochs, L, C, lr, batch_size, use_l1_penalty=True, use_proximal_soft_thresholding=True):
     # Intialize variables and placeholders
     initialW = (((np.random.rand(28*28,1) * 2) - 1) * 1e-6).astype(dtype='float32')
     initialB=0.0
@@ -49,7 +49,10 @@ def run(n_epochs, L, C, lr, batch_size):
     predictions = tf.matmul(x,w)+b
     loss = tf.math.log(1+tf.math.exp(tf.multiply(-y,predictions)))
     l1_penalty = (1/C) * tf.reduce_sum(tf.abs(w))
-    risk = tf.reduce_mean(loss) + l1_penalty
+    if use_l1_penalty:
+        risk = tf.reduce_mean(loss) + l1_penalty
+    else:
+        risk = tf.reduce_mean(loss)
 
     optimizer = tf.train.GradientDescentOptimizer(lr)
     train = optimizer.minimize(risk)
@@ -65,26 +68,37 @@ def run(n_epochs, L, C, lr, batch_size):
                 jS=j;jE=min(n_train,j+batch_size)
                 x_batch=x_train[jS:jE,:]
                 y_batch=y_train[jS:jE,:]
-                _,curr_batch_risk,predBatchY,w_value=sess.run([train,risk,predictions,w],feed_dict={x: x_batch, y: y_batch});
-                new_w_value = np.zeros(w_value.shape)
-                if len(new_w_value[w_value >= 1/L]) > 0:
-                    new_w_value[w_value >= 1/L] = w_value[w_value >= 1/L] - (1/L)
-                if len(new_w_value[w_value <= -1/L]) > 0:
-                    new_w_value[w_value <= -1/L] = w_value[w_value <= -1/L] + (1/L)
-                new_w_assign = tf.assign(w,new_w_value)
-                sess.run(new_w_assign)
+                _,curr_batch_risk,predBatchY,w_value=sess.run([train,risk,predictions,w],feed_dict={x: x_batch, y: y_batch})
+                if use_proximal_soft_thresholding:
+                    new_w_value = np.zeros(w_value.shape)
+                    if len(new_w_value[w_value >= 1/L]) > 0:
+                        new_w_value[w_value >= 1/L] = w_value[w_value >= 1/L] - (1/L)
+                    if len(new_w_value[w_value <= -1/L]) > 0:
+                        new_w_value[w_value <= -1/L] = w_value[w_value <= -1/L] + (1/L)
+                    new_w_assign = tf.assign(w,new_w_value)
+                    sess.run(new_w_assign)
 
             y_pred,curr_w,curr_b=sess.run([predictions,w,b],feed_dict={x: x_test, y: y_test})
             err=np.sum(np.abs(np.sign(y_pred) - y_test))
             errors.append(err)
             print(i, "Total Error count:",err)
-    return errors
+    return errors, w_value
 
 if __name__ == "__main__":
-    # run(
-    #     n_epochs = 100,
-    #     L = 1e20,
-    #     C = 100,
-    #     batch_size = 2048,
-    # )
-    print(len(y_test))
+    accuracy, w_value = run(
+        n_epochs = 100,
+        L = 1e6,
+        C = 10,
+        lr = 1e-6,
+        batch_size = 2048,
+        # use_l1_penalty=False,
+        use_proximal_soft_thresholding=False,
+    )
+
+    print(list(accuracy))
+    print()
+    print()
+    print()
+    print()
+    print()
+    print([w[0] for w in w_value.tolist()])
