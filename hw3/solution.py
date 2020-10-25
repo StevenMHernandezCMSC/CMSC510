@@ -38,7 +38,7 @@ y_test = y_test.reshape((y_test.shape[0], 1))
 
 def run(n_epochs, L, C, lr, batch_size):
     # Intialize variables and placeholders
-    initialW = (np.random.rand(28*28,1)).astype(dtype='float32')
+    initialW = (((np.random.rand(28*28,1) * 2) - 1) * 1e-6).astype(dtype='float32')
     initialB=0.0
     w = tf.Variable(initialW,name="w")
     b = tf.Variable(initialB,name="b")
@@ -81,9 +81,10 @@ def run(n_epochs, L, C, lr, batch_size):
     return errors
 
 if __name__ == "__main__":
-    run(
-        n_epochs = 100,
-        L = 1e20,
-        C = 100,
-        batch_size = 2048,
-    )
+    # run(
+    #     n_epochs = 100,
+    #     L = 1e20,
+    #     C = 100,
+    #     batch_size = 2048,
+    # )
+    print(len(y_test))

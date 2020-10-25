@@ -36,7 +36,8 @@ legends = []
 for i, L in enumerate(L_s):
     for j, C in enumerate(C_s):
         val = df[df.C == C][df.L == L].training_error
-        plt.plot(list(val)[0])
-        legends.append(f"C={C}, L={L}")
+        plt.plot(1 - (np.array(list(val)[0]) / 1901))
+        L_str = f"1e{(i*0.5)+5}"
+        legends.append(f"C={C}, L={L_str}")
 plt.legend(legends)
 plt.show()
