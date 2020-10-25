@@ -10,8 +10,8 @@ with open("grid.csv", "w+") as f:
     # write header
     csv_writer.writerow(["n_epochs", "L", "C", "batch_size", "lr", "training_error"])
 
-    for L in [10**(i) for i in [5.5,6,6.5,7,7.5,8]]:
-        for C in [1e2]:
+    for L in [1e6]:
+        for C in [1,10,100]:
             print(L, C)
             training_error = run(
                 n_epochs = 100,

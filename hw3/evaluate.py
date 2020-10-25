@@ -40,4 +40,6 @@ for i, L in enumerate(L_s):
         L_str = f"1e{(i*0.5)+5}"
         legends.append(f"C={C}, L={L_str}")
 plt.legend(legends)
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
 plt.show()
