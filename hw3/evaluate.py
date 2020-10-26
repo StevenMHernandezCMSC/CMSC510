@@ -45,13 +45,23 @@ import matplotlib.pyplot as plt
 # plt.show()
 
 
-df = pd.read_csv("final_weights.csv")
+df = pd.read_csv("final_accuracies.csv")
 legends = []
 for i,row in df.iterrows():
-    plt.plot(sorted([float(x) for x in row.w.strip('][').split(', ')]))
+    plt.plot(sorted([1-(float(x)/1901) for x in row.accuracy.strip('][').split(', ')]))
     legends.append(f"L1 Penalty: {row.use_l1_penalty}, Proximal: {row.use_proximal_soft_thresholding}")
 plt.legend(legends)
-plt.xlabel("i")
-plt.ylabel("w CDF")
+plt.xlabel("epochs")
+plt.ylabel("Accuracy (%)")
 plt.show()
-df = pd.read_csv("final_weights.csv")
+
+# df = pd.read_csv("final_weights.csv")
+# legends = []
+# for i,row in df.iterrows():
+#     plt.plot(sorted([float(x) for x in row.w.strip('][').split(', ')]))
+#     legends.append(f"L1 Penalty: {row.use_l1_penalty}, Proximal: {row.use_proximal_soft_thresholding}")
+# plt.legend(legends)
+# plt.xlabel("i")
+# plt.ylabel("w CDF")
+# plt.show()
+# df = pd.read_csv("final_weights.csv")

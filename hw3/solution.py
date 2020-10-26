@@ -91,14 +91,4 @@ if __name__ == "__main__":
         C = 10,
         lr = 1e-6,
         batch_size = 2048,
-        # use_l1_penalty=False,
-        use_proximal_soft_thresholding=False,
     )
-
-    print(list(accuracy))
-    print()
-    print()
-    print()
-    print()
-    print()
-    print([w[0] for w in w_value.tolist()])
