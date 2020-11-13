@@ -6,8 +6,15 @@ from torch import nn
 import torchvision.datasets as datasets
 
 
-def run():
+def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
+  #
+  # CONFIG
+  #
+  print("NUM_CNN_LAYERS =", NUM_CNN_LAYERS) # [0,1,2]
+  print("CNN_FILTER_SIZE =", CNN_FILTER_SIZE) # [0,1,2]
+
   start_time = time()
+
   # 
   # Load MNIST Dataset
   # 
@@ -15,7 +22,7 @@ def run():
   mnist_testset = datasets.MNIST(root='./data', train=False, download=True, transform=None)
 
   # max_elements = 1000
-  max_elements = 1000000  # a.k.a. use all of them.
+  max_elements = 1000000  # i.e. use all of them.
 
   X_train = mnist_trainset.data[:max_elements]
   y_train = mnist_trainset.targets[:max_elements]
@@ -25,29 +32,35 @@ def run():
   X_train = torch.reshape(X_train, (len(X_train), 1, 28, 28)).float()
   X_test = torch.reshape(X_test, (len(X_test), 1, 28, 28)).float()
 
-  w = 169
-  # w = 144
-  # w = 121
+  w = {
+    "0,0": 28*28,
+    "1,3": 169,
+    "1,5": 144,
+    "1,9": 100,
+    "2,3": 144,
+    "2,5": 100,
+    "2,9": 36,
+  }[f"{NUM_CNN_LAYERS},{CNN_FILTER_SIZE}"]
 
-  model = nn.Sequential(
-    nn.Conv2d(1,1,(3,3)),
-    nn.ReLU(),
+  layers = []
 
-    # nn.Conv2d(1,1,(3,3)),
-    # nn.ReLU(),
+  for i in range(NUM_CNN_LAYERS):
+    layers.append(nn.Conv2d(1,1,CNN_FILTER_SIZE))
+    layers.append(nn.ReLU())
+    layers.append(nn.BatchNorm2d(1))
 
-    # nn.Conv2d(1,1,(3,3)),
-    # nn.ReLU(),
+  if NUM_CNN_LAYERS > 0:
+    layers.append(nn.MaxPool2d(2))
 
-    nn.BatchNorm2d(1),
-
-    nn.MaxPool2d(2),
+  layers = layers + [
     nn.ReLU(),
     nn.Flatten(),
 
     nn.Linear(w,10),
     nn.ReLU(),
-  )
+  ]
+
+  model = nn.Sequential(*layers)
 
   loss = nn.CrossEntropyLoss()
 
@@ -58,11 +71,32 @@ def run():
   l_val_loss = []
   l_val_acc = []
 
+  batch_size = 2048
+
   for i in range(100):
     print("Iteration:", i)
-    # clear previous gradient calculations
-    optimizer.zero_grad()
+    for j in range(0,len(X_train),batch_size):
+      jS=j;jE=min(len(X_train),j+batch_size)
+      X_batch=X_train[jS:jE,:]
+      y_batch=y_train[jS:jE]
 
+      # clear previous gradient calculations
+      optimizer.zero_grad()
+
+      # calculate f based on current value
+      y_pred = model(X_batch)
+      y_true = y_batch
+      z = loss(y_pred, y_true)
+
+      # calculate gradient of f w.r.t. w
+      z.backward()
+
+      # use the gradient to change w
+      optimizer.step()
+
+    #
+    # Calculate Training Error
+    #
     # calculate f based on current value
     y_pred = model(X_train)
     y_true = y_train
@@ -70,25 +104,24 @@ def run():
     accuracy = sum((y_pred.argmax(axis=1) - y_true).abs() == 0) / float(len(y_train))
     l_loss.append(float(z))
     l_acc.append(float(accuracy))
-    print("Training:", z, accuracy)
+    print("Training:  ", "loss:", float(z), "accuracy:", float(accuracy))
 
-    # calculate gradient of f w.r.t. w
-    z.backward()
-
-    # use the gradient to change w
-    optimizer.step()
-
+    #
+    # Calculate Testing Error
+    #
     y_pred = model(X_test)
     y_true = y_test
     z = loss(y_pred, y_true)
     accuracy = sum((y_pred.argmax(axis=1) - y_true).abs() == 0) / float(len(y_test))
     l_val_loss.append(float(z))
     l_val_acc.append(float(accuracy))
-    print("Validation:", z, accuracy)
+    print("Validation:", "loss:", float(z), "accuracy:", float(accuracy))
 
 
   print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
+  print("NUM_CNN_LAYERS =", NUM_CNN_LAYERS)
+  print("CNN_FILTER_SIZE =", CNN_FILTER_SIZE)
   print("time_taken =", time() - start_time)
   print("loss =", l_loss)
   print("validation_loss =", l_val_loss)
@@ -96,4 +129,9 @@ def run():
   print("validation_acc =", l_val_acc)
 
 if __name__ == "__main__":
-  run()
+  import sys
+
+  NUM_CNN_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+  CNN_FILTER_SIZE = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+
+  run(NUM_CNN_LAYERS, CNN_FILTER_SIZE)
