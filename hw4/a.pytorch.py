@@ -6,12 +6,13 @@ from torch import nn
 import torchvision.datasets as datasets
 
 
-def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
+def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE, OPTIMIZER):
     #
     # CONFIG
     #
     print("NUM_CNN_LAYERS =", NUM_CNN_LAYERS)
     print("CNN_FILTER_SIZE =", CNN_FILTER_SIZE)
+    print("OPTIMIZER =", OPTIMIZER)
 
     start_time = time()
 
@@ -67,7 +68,8 @@ def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
 
     loss = nn.CrossEntropyLoss()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01) if OPTIMIZER == "Adam" else torch.optim.SGD(
+        model.parameters(), lr=0.01)
 
     #
     # Train and evaluate model
@@ -78,7 +80,7 @@ def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
     l_val_acc = []
 
     batch_size = 2048
-    for i in range(100):
+    for i in range(10):
         print("Iteration:", i)
         for j in range(0, len(X_train), batch_size):
             jS = j
@@ -130,6 +132,7 @@ def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
 
     print("NUM_CNN_LAYERS =", NUM_CNN_LAYERS)
     print("CNN_FILTER_SIZE =", CNN_FILTER_SIZE)
+    print("OPTIMIZER =", OPTIMIZER)
     print("time_taken =", time() - start_time)
     print("loss =", l_loss)
     print("validation_loss =", l_val_loss)
@@ -142,5 +145,8 @@ if __name__ == "__main__":
 
     NUM_CNN_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     CNN_FILTER_SIZE = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    OPTIMIZER = sys.argv[3] if len(sys.argv) > 3 else "Adam"
+    if OPTIMIZER not in ["Adam", "SGD"]:
+        raise Exception("Optimizer not allowed.")
 
-    run(NUM_CNN_LAYERS, CNN_FILTER_SIZE)
+    run(NUM_CNN_LAYERS, CNN_FILTER_SIZE, OPTIMIZER)

@@ -2,24 +2,26 @@ from time import time
 from tensorflow import keras
 from tensorflow.keras import layers
 
-def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
+
+def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE, OPTIMIZER):
     #
     # CONFIG
     #
     print("NUM_CNN_LAYERS =", NUM_CNN_LAYERS)
     print("CNN_FILTER_SIZE =", CNN_FILTER_SIZE)
+    print("OPTIMIZER =", OPTIMIZER)
 
     start_time = time()
 
     #
     # Build Model
     #
-    inputs = keras.Input(shape=(28,28,1))
+    inputs = keras.Input(shape=(28, 28, 1))
     x = inputs
 
     for i in range(NUM_CNN_LAYERS):
         if i == 0:
-            x = layers.Conv2D(CNN_FILTER_SIZE, CNN_FILTER_SIZE, input_shape=(28,28,1))(x)
+            x = layers.Conv2D(CNN_FILTER_SIZE, CNN_FILTER_SIZE, input_shape=(28, 28, 1))(x)
         else:
             x = layers.Conv2D(CNN_FILTER_SIZE, CNN_FILTER_SIZE)(x)
         x = layers.Dense(64, activation='relu')(x)
@@ -36,7 +38,8 @@ def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
 
     model.compile(
         loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        optimizer=keras.optimizers.SGD(learning_rate=0.01),
+        optimizer=(keras.optimizers.Adam(learning_rate=0.01) if OPTIMIZER == "Adam" else keras.optimizers.SGD(
+            learning_rate=0.01)),
         metrics=["accuracy"],
     )
 
@@ -77,16 +80,21 @@ def run(NUM_CNN_LAYERS, CNN_FILTER_SIZE):
 
     print("NUM_CNN_LAYERS =", NUM_CNN_LAYERS)
     print("CNN_FILTER_SIZE =", CNN_FILTER_SIZE)
+    print("OPTIMIZER =", OPTIMIZER)
     print("time_taken =", time() - start_time)
     print("loss =", history.history['loss'])
     print("validation_loss =", history.history['val_loss'])
     print("acc =", history.history['accuracy'])
     print("validation_acc =", history.history['val_accuracy'])
 
+
 if __name__ == "__main__":
-  import sys
+    import sys
 
-  NUM_CNN_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 0
-  CNN_FILTER_SIZE = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    NUM_CNN_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+    CNN_FILTER_SIZE = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    OPTIMIZER = sys.argv[3] if len(sys.argv) > 3 else "SGD"
+    if OPTIMIZER not in ["Adam", "SGD"]:
+        raise Exception("Optimizer not allowed.")
 
-  run(NUM_CNN_LAYERS, CNN_FILTER_SIZE)
+    run(NUM_CNN_LAYERS, CNN_FILTER_SIZE, OPTIMIZER)
